@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent Test Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            box-sizing: border-box;
+        }
+        h1 {
+            color: #0056b3;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .message-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            background-color: #e9ecef;
+            border: 1px solid #dee2e6;
+            min-height: 100px;
+        }
+        .message-box.success {
+            background-color: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+        .message-box.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Agent Tester 🤖</h1>
+        <div class="form-group">
+            <label for="campaignName">Campaign Name:</label>
+            <input type="text" id="campaignName" value="Test Campaign" required>
+        </div>
+        <div class="form-group">
+            <label for="campaignImage">Upload Screenshot (JPEG/PNG):</label>
+            <input type="file" id="campaignImage" accept="image/jpeg, image/png">
+        </div>
+        <button onclick="startCampaign()">Start Campaign</button>
+        <div class="message-box" id="responseBox">
+            Backend se aane wala response yahan dikhega...
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://127.0.0.1:5000/api/v1/campaigns";
+
+        async function startCampaign() {
+            const campaignName = document.getElementById('campaignName').value;
+            const fileInput = document.getElementById('campaignImage');
+            const responseBox = document.getElementById('responseBox');
+            
+            if (!fileInput.files.length) {
+                alert("Please select a screenshot to upload.");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = async function(event) {
+                const base64Data = event.target.result.split(',')[1];
+                
+                const payload = {
+                    campaign_details: {
+                        campaign_id: `test-${Date.now()}`,
+                        campaign_name: campaignName,
+                        input_type: "screenshot",
+                        input_data: base64Data, // Base64 encoded image data
+                        required_length_sec: "15-60s",
+                        target_product: "AI-powered tool",
+                        target_audience: "Content creators",
+                        social_media_platforms: ["youtube", "instagram"]
+                    }
+                };
+
+                try {
+                    responseBox.innerHTML = "Processing... Please wait.";
+                    responseBox.className = "message-box";
+
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        responseBox.innerHTML = `Success! 🎉\n\nStatus: ${result.status}\nMessage: ${result.message}`;
+                        responseBox.className = "message-box success";
+                        console.log("Campaign started successfully:", result);
+                    } else {
+                        responseBox.innerHTML = `Error! ❌\n\nStatus: ${result.status}\nMessage: ${result.message || 'Unknown error'}`;
+                        responseBox.className = "message-box error";
+                        console.error("API Error:", result);
+                    }
+
+                } catch (error) {
+                    responseBox.innerHTML = `Network Error! ❌\n\nFailed to connect to the backend. Please ensure the server is running.`;
+                    responseBox.className = "message-box error";
+                    console.error("Network or Fetch Error:", error);
+                }
+            };
+
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>

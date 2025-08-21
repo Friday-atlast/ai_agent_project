@@ -18,6 +18,10 @@ debug = true # Development mode mein debug true rakhein
 # Data storage directories ke base path
 data_dir = "backend/data"
 
+# Tesseract OCR engine ka executable path (agar PATH mein nahi hai)
+tesseract_cmd = "D:\\main\\Tessereact\\tesseract.exe"
+
+
 [logging]
 # Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
 level = "INFO"

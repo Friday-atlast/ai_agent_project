@@ -1,4 +1,5 @@
 import logging
+from backend.strategist_agent.strategist import Strategist # Strategist class ko import karein
 
 class Manager:
     """
@@ -15,7 +16,10 @@ class Manager:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.info("Manager initialized with provided configuration.")
 
-        # Yahan par hum future ke liye kuch placeholder attributes set up karenge.
+        # Strategist Agent ko initialize karein
+        self.strategist_agent = Strategist(config)
+        self.logger.info("Strategist Agent initialized within Manager.")
+
         self.campaigns = {} # Active campaigns ka record.
         self.workflow_status = {} # Har campaign ke workflow ka status.
 
@@ -30,22 +34,20 @@ class Manager:
         Returns:
             dict: Campaign processing status aur results ka summary.
         """
-        campaign_id = campaign_details.get("campaign_id", "default_id") # Unique ID generate karne ke liye placeholder.
+        campaign_id = campaign_details.get("campaign_id", "default_id")
         campaign_name = campaign_details.get("campaign_name", "Unnamed Campaign")
         
         self.logger.info(f"[{campaign_id}] Starting workflow for campaign: {campaign_name}")
         
-        # Ab hum yahan par detailed workflow likhenge
         try:
-            # Step 1: Strategist Agent ko call karein (Placeholder)
+            # Step 1: Strategist Agent ko call karein
             self.logger.info(f"[{campaign_id}] Calling Strategist Agent with campaign details...")
-            # strategist_output = self.strategist_agent.run(campaign_details) # Future mein aise call hoga
-            strategist_output = {"status": "success", "action_plan": "placeholder"} # Abhi ke liye placeholder
+            strategist_output = self.strategist_agent.run(campaign_details)
             
             if strategist_output["status"] == "error":
                 raise Exception(f"Strategist Agent failed: {strategist_output.get('message', 'Unknown error')}")
             
-            self.logger.info(f"[{campaign_id}] Strategist Agent finished. Action Plan created.")
+            self.logger.info(f"[{campaign_id}] Strategist Agent finished. Action Plan created: {strategist_output.get('action_plan', 'No plan found')}")
 
             # Step 2: Researcher Agent ko call karein (Placeholder)
             self.logger.info(f"[{campaign_id}] Calling Researcher Agent with action plan...")
