@@ -1,0 +1,37 @@
+# Python-specific ignores
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+lib/
+include/
+bin/
+share/
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+.ipynb_checkpoints
+.mypy_cache/
+.ruff_cache/
+
+# OS-specific ignores
+.DS_Store
+.Trash/
+Thumbs.db
+
+# Project-specific ignores
+# Data directories (generated/downloaded files)
+backend/data/
+# Log files
+logs/
+# Environment variables (sensitive info)
+.env
+# Editor/IDE specific files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace

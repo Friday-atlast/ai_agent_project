@@ -1,0 +1,25 @@
+# AI Agent Project Configuration File
+
+[app]
+# Application ka naam
+name = "AI Content Creator Agent"
+# Application ka version
+version = "0.1.0-alpha"
+# Environment (development, production)
+environment = "development"
+
+[server]
+# Flask development server ke liye host aur port
+host = "0.0.0.0" # Accessible from any IP
+port = 5000
+debug = true # Development mode mein debug true rakhein
+
+[paths]
+# Data storage directories ke base path
+data_dir = "backend/data"
+
+[logging]
+# Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+level = "INFO"
+# Log file ka path
+file = "logs/app.log"
