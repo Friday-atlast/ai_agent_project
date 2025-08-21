@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from jsonschema import validate, ValidationError
 import logging
-from backend.ai_agent_manager.data_schema import get_campaign_details_schema
+from backend.ai_agent_manager.data_schema import get_campaign_details_schema, get_agent_response_schema
 
 # Flask application instance banayein
 app = Flask(__name__)
@@ -10,8 +10,11 @@ app = Flask(__name__)
 CORS(app)
 logger = logging.getLogger(__name__)
 
-# Route for health check, same as Day 1
-@app.route("/health", methods=["GET"])
+# --- API Specification ---
+# Base URL: http://localhost:5000/api
+# Version: v1
+
+@app.route("/api/v1/health", methods=["GET"])
 def health_check():
     """
     Ek simple health check endpoint jo server ki up-status batata hai.
@@ -19,23 +22,22 @@ def health_check():
     logger.info("Health check requested.")
     return jsonify({"status": "healthy", "message": "AI Agent Backend is running."}), 200
 
-# Route to start a campaign
-@app.route("/start_campaign", methods=["POST"])
-def start_campaign():
+@app.route("/api/v1/campaigns", methods=["POST"])
+def create_campaign():
     """
-    Campaign workflow ko shuru karne ke liye endpoint.
+    Naya campaign shuru karne ke liye endpoint.
     Frontend se campaign details JSON format mein receive karega.
     """
     # 1. JSON Request Body ko check karein
     data = request.get_json()
     if not data:
-        logger.warning("No JSON data received for /start_campaign.")
+        logger.warning("No JSON data received for /api/v1/campaigns.")
         return jsonify({"status": "error", "message": "Request must contain JSON data."}), 400
 
     # 2. Schema Validation karein
     campaign_details = data.get("campaign_details")
     if not campaign_details:
-        logger.warning("Missing 'campaign_details' in /start_campaign request.")
+        logger.warning("Missing 'campaign_details' in /api/v1/campaigns request.")
         return jsonify({"status": "error", "message": "Missing 'campaign_details' in request."}), 400
 
     schema = get_campaign_details_schema()
@@ -57,6 +59,5 @@ def start_campaign():
         result = ai_manager.start_campaign_workflow(campaign_details)
         return jsonify(result), 200
     except Exception as e:
-        # Manager se aane wale kisi bhi error ko handle karein
         logger.error(f"An unexpected error occurred in the campaign workflow: {e}", exc_info=True)
         return jsonify({"status": "error", "message": "An internal server error occurred."}), 500
