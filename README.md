@@ -26,7 +26,7 @@ Yeh sections aapko project set up karne aur run karne mein madad karega.
 
 1.  **Repository Clone Karein:**
     ```bash
-    git clone [https://github.com/Friday-atlast/ai_agent_project.git](https://github.com/Friday-atlast/ai_agent_project.git)
+    git clone [https://github.com/Friday-atlast/ai_agent_project.git]
     cd ai_agent_project
     ```
 
