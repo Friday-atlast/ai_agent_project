@@ -1,5 +1,6 @@
 import logging
-from backend.strategist_agent.tools.ocr_model import OCRModel # OCRModel ko import karein
+from backend.strategist_agent.tools.ocr_model import OCRModel
+from backend.strategist_agent.tools.document_parser import DocumentParser
 
 class Strategist:
     """
@@ -7,53 +8,52 @@ class Strategist:
     Yeh campaign details ko analyze karegi aur ek action plan banayegi.
     """
     def __init__(self, config):
-        """
-        Strategist ko initialize karta hai.
-        Args:
-            config (dict): Application ki configuration settings.
-        """
         self.config = config
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.info("Strategist Agent initialized with provided configuration.")
 
         # OCRModel tool ko initialize karein
-        self.ocr_model = OCRModel(config) # OCRModel ko yahan initialize kar rahe hain.
+        self.ocr_model = OCRModel(config)
+        self.logger.info("OCRModel initialized within Strategist.")
+
+        # DocumentParser tool ko initialize karein
+        self.document_parser = DocumentParser(config)
+        self.logger.info("DocumentParser initialized within Strategist.")
 
 
     def run(self, campaign_details: dict) -> dict:
         """
         Strategist agent ka mukhya execution method.
         Campaign details ko analyze karta hai aur ek action plan banata hai.
-
-        Args:
-            campaign_details (dict): Manager se mila campaign details.
-
-        Returns:
-            dict: Strategist ka output (action plan).
-            {"status": "success", "action_plan": {...}, "message": "..."}
-            {"status": "error", "message": "..."}
         """
         campaign_id = campaign_details.get("campaign_id", "unknown_campaign")
         self.logger.info(f"[{campaign_id}] Strategist Agent: Starting analysis for campaign.")
         
-        # Abhi ke liye, hum yahan sirf OCRModel ko test karenge.
-        # Future mein yahan par saare Strategist tools ka workflow hoga.
-        
         input_type = campaign_details.get("input_type")
         input_data = campaign_details.get("input_data")
 
+        # Input type ke aadhar par sahi tool ka upyog karein
         if input_type == "screenshot":
             self.logger.info(f"[{campaign_id}] Strategist Agent: Processing screenshot input for OCR.")
-            ocr_result = self.ocr_model.extract_text_from_image(input_data, "base64") # Assuming base64 for now
+            result = self.ocr_model.extract_text_from_image(input_data, "base64")
             
-            if ocr_result["status"] == "success":
-                self.logger.info(f"[{campaign_id}] Strategist Agent: OCR successful. Extracted text length: {len(ocr_result['extracted_text'])} characters.")
-                # Yahan extracted text ko aage ke tools (e.g., Requirement Extraction) ko pass kiya jayega
-                return {"status": "success", "action_plan": {"extracted_text": ocr_result["extracted_text"]}, "message": "Strategist processed screenshot successfully."}
-            else:
-                self.logger.error(f"[{campaign_id}] Strategist Agent: OCR failed: {ocr_result['message']}")
-                return {"status": "error", "message": f"Strategist failed to process screenshot: {ocr_result['message']}"}
+        elif input_type in ["text_file", "pdf_file", "docx_file", "url", "discord_link"]:
+            self.logger.info(f"[{campaign_id}] Strategist Agent: Processing document/URL input.")
+            result = self.document_parser.extract_text(input_data, input_type)
+
         else:
-            self.logger.warning(f"[{campaign_id}] Strategist Agent: Input type '{input_type}' not yet fully supported. Returning placeholder.")
-            # Future mein yahan text_file, discord_link handle honge
-            return {"status": "success", "action_plan": {"research_keywords": ["placeholder"]}, "message": "Strategist completed (placeholder for other input types)."}
+            self.logger.warning(f"[{campaign_id}] Strategist Agent: Input type '{input_type}' not supported. Returning placeholder.")
+            return {"status": "error", "message": f"Unsupported input type: {input_type}"}
+
+        # Extracted text ko action plan mein shaamil karein
+        if result["status"] == "success":
+            extracted_text = result["extracted_text"]
+            self.logger.info(f"[{campaign_id}] Strategist Agent: Content extraction successful. Extracted text length: {len(extracted_text)} characters.")
+            action_plan = {
+                "extracted_text": extracted_text,
+                "research_keywords": [] # Isko aage ke dinon mein implement karenge
+            }
+            return {"status": "success", "action_plan": action_plan, "message": "Strategist processed input successfully."}
+        else:
+            self.logger.error(f"[{campaign_id}] Strategist Agent: Content extraction failed: {result['message']}")
+            return {"status": "error", "message": f"Strategist failed to process input: {result['message']}"}
